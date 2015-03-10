@@ -1,0 +1,34 @@
+{
+  "name": "Online Portfolio",
+  "version": "0.0.0",
+  "authors": [
+    "chrisenabled <chrisenabled@gmail.com>"
+  ],
+  "description": "Christopher Ahmed's online portfolio",
+  "main": "index.html",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "portfolio"
+  ],
+  "license": "MIT",
+  "homepage": "chrisenabled.com",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angularAMD": "~0.2.1",
+    "ui-router": "~0.2.13",
+    "ui-bootstrap": "~0.12.1",
+    "fancyInput": "~1.2.0",
+    "jquery": "~2.1.3",
+    "backbone": "~1.1.2",
+    "requirejs-domready": "2.0.1"
+  }
+}

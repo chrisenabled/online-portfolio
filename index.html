@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html class="no-js" lang="en"><!-- the "no-js" class is for Modernizr. -->
+    
+    <head>
+        <meta charset="UTF-8">
+        <!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame -->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="user-scalable=no,width=device-width,
+                                       initial-scale=1 maximum-scale=1.0"/>
+        
+        <title>Chris's Home</title>
+        
+        <!-- Google will often use this as its description of your page/site. Make it good. -->
+        <meta name="author" content="Christopher Ahmed">
+        <meta name="keywords" content="portfolio, resume, christopher Ahmed">
+        <meta name="description" content="Home Page for Christopher Ahmed's Portfolio">
+        
+        <!-- Speaking of Google, don't forget to set your site up: http://google.com/webmasters -->
+        <meta name="google-site-verification" content="">
+        
+        <!-- Dublin Core Metadata : http://dublincore.org/ -->
+        <meta name="DC.title" content="Christopher Ahmed's Portfolio">
+        <meta name="DC.subject" content="Christopher is a polygot Software Developer">
+        <meta name="DC.creator" content="Christopher Ahmed">
+        
+        <link rel="stylesheet" type="text/css" href="assets/css/style.css" />
+        <link rel="stylesheet" type="text/css" 
+              href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+        <link href='http://fonts.googleapis.com/css?family=Lato:300' rel='stylesheet'                       type='text/css'>
+        
+        <script data-main="assets/js/main.js" src="bower_components/requirejs/require.js"></script>
+    </head> 
+    
+    <body>
+        <header>
+            <div id="app-nav-bar" class="navbar navbar-inverse navbar-fixed-top">
+                <div class="container">
+                    <div class="navbar-header">
+                        <a href="#" class="navbar-brand">Profile</a>
+                        <button class="navbar-toggle" data-toggle= "collapse" 
+                                data-target=".navHeaderCollapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+                    <div class="collapse navbar-collapse navHeaderCollapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">About</a></li>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+            <div id="content" ui-view></div>        
+        <footer>
+            
+        </footer>
+    </body>
+</html>
