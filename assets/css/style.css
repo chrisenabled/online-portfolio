@@ -4,6 +4,7 @@
 html, body {
     width:  100%;
     height: 100%;
+    overflow: hidden;
     font-family: 'Josefin Slab', serif;
     text-shadow: 0px -1px 2px rgba(150, 150, 150, 1);
 }
@@ -18,7 +19,7 @@ body{
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a90329',                          endColorstr='#6d0019',GradientType=0 ); /* IE6-9 */
 
 }
-#app-nav-bar{
+#app-nav-bar, #footer{
     background: rgba(0, 0, 0, 0.45);
     
 }
@@ -60,5 +61,53 @@ h1 {
 	background-clip: text;
         color: transparent;
         text-shadow: rgba(255,255,255,0.5) 0px 1px 1px;
+}
+
+#footer{
+    width: 100%; position: fixed; bottom: 0;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100px; 
+}
+
+@media all and (max-width: 639px) and (min-width: 320px) {
+    #footer {
+        background-size: 320px 55px;
+        height: 60px;
+        line-height: 60px;
+    }
+    #footer img{margin: 0px 3px 0px 3px; height: 36px; width: 36px;}
+
+}
+
+@media all and (max-width: 799px) and (min-width: 640px) {
+    #footer {
+        background-size: 640px 110px;
+        height: 80px;
+        line-height: 80px;
+    }
+    #footer img{margin: 0px 5px 0px 5px; height: 36px; width: 36px;}
+
+}
+
+@media all and (max-width: 1023px) and (min-width: 800px) {
+    #footer {
+        background-size: 800px 138px;
+        height: 90px;
+        line-height: 90px;
+    }
+    #footer img{margin: 0px 7px 0px 7px; height: 48px; width: 48px;}
+
+}
+
+/* this one goes for default images - bigger sizes */
+@media all and (min-width: 1024px) {
+    #footer {
+        background-size: 1024px 100px;
+        height: 100px;
+        
+    }
+    #footer img{margin: 0px 10px 0px 10px; height: 48px; width: 48px;}
+
 }
 
