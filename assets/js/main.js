@@ -16,7 +16,8 @@ require.config({
         'bootstrapJs': ["https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min"],
         'domReady':['https://cdnjs.cloudflare.com/ajax/libs/require-domReady/2.0.1/domReady.min.js',
                    'requirejs-domready/domReady'],
-        'app': '../app/app'
+        'app': '../app/app',
+        'objects':'../assets/js/Objects'
     },
     shim: { 
             'ui-router': ['angular'],

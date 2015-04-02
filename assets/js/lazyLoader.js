@@ -7,7 +7,9 @@ define(
         $(document).ready(function(){
             
             var appCreate = '../assets/js/appCreate';
-        
+            var siteJs = '../assets/js/site'
+            
+            require([siteJs]); 
         
             //Load custom assets that are used throughout the application
 

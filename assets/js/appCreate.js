@@ -1,7 +1,6 @@
-define(['createJs'], function(){
-    var objectsLink = '../assets/js/Objects';
+define(['createJs','objects'], function(){
     var stage, queue, canvas, logoContainer, PreloaderBar, menuContainer, startButton;
-    var tickCount = 0; var logoArray = [];
+    var tickCount = 0; var logoArray = []; var backgroundSong; var gallery; var galleryQueue;
     
     //function to load assets and initialize the stage
     function preload() {
@@ -10,6 +9,12 @@ define(['createJs'], function(){
         queue.loadManifest([
             {id:"startButton", src:"../assets/images/start_button.png"},
             {id:"buttonClick", src:"../assets/sounds/button_click.mp3"},
+            {id:"blop", src:"../assets/sounds/blop.mp3"},
+            {id:"list", src:"../assets/images/list.png"},
+            {id:"back", src:"../assets/images/back.png"},
+            {id:"home", src:"../assets/images/home.png"},
+            {id:"volumeOn", src:"../assets/images/volume-up.png"},
+            {id:"volumeOff", src:"../assets/images/volume-off.png"},
             {id:1, src:"../assets/images/nodejs.png"},
             {id:2, src:"../assets/images/git.png"},
             {id:3, src:"../assets/images/ruby.png"},
@@ -46,15 +51,31 @@ define(['createJs'], function(){
         onWindowResize();
         setStage();
         setPreloader();
-        queue.on("fileprogress", handleFileLoad, this);
+        queue.on("fileload", handleFileLoad, this);
         queue.on("complete", function(e){
             stage.removeChild(PreloaderBar);
             PreloaderBar = null;
-            startButton = new StartButton();
+            loadButton();            
         });
         queue.load();
     }
     
+    function loadButton(){
+        startButton = new StartButton(queue.getResult('startButton'),stage);
+        var self = startButton;
+        self.btn.on("click", function(e){
+            e.preventDefault();
+            var instance = createjs.Sound.play("buttonClick");
+            instance.volume = 0.2;
+            createjs.Tween.get(self.btn).call(self.pressdown, [self.btn]).wait(200)
+            .call(self.pressup, [self.btn, self.btn.shadow])
+            .to({rotation: 1080, alpha:0, scaleX:0, scaleY:0 }, 1000, createjs.Ease.linear)
+            .to({rotation: 0}).call(self.removeButton).call(begin); 
+            //begin();
+            return false;
+        });
+            
+    }
     function onWindowResize(){
       window.addEventListener("resize", function(e){
             if(stage){
@@ -72,15 +93,19 @@ define(['createJs'], function(){
             if(logoArray.length > 0){
                 for(var i = 0; i < logoArray.length; i++){
                     logoArray[i].resizeLogo();
-                    console.log(logoArray[i].scale);
                 }
             }
             if(menuContainer){
                 menuContainer.setDimension();
-                menuContainer.adjustLists();
+                menuContainer.adjustChildren();
             }
             if(startButton){
                 startButton.adjustButton();
+            }
+            if(gallery){
+                gallery.setDimension();
+                gallery.adjustChildren();
+                
             }
         });  
     }
@@ -97,88 +122,17 @@ define(['createJs'], function(){
 
     
     function setPreloader(){
-        require([objectsLink], function(p){
-            PreloaderBar = PreloaderBar || new p.Preloader('#4f7e0d','#000');
+            PreloaderBar = new window.Preloader('#4f7e0d','#000');
             PreloaderBar.x = (stage.canvas.width - PreloaderBar.width)/2; 
             PreloaderBar.y = (stage.canvas.height - PreloaderBar.height)/2;
             stage.addChild(PreloaderBar);
-        });
-        
-        stage.update();
     }
     
     function handleFileLoad(e){
         if(PreloaderBar)
-            PreloaderBar.update(e.progress);
+            PreloaderBar.update(1/37);
     }
     
-    var StartButton = (function(){
-            
-        var button = function(){
-            this.btn;
-            this.initialize();
-            //this.button_initialize;
-        }
-        
-        var p = button.prototype; 
-        
-        p.initialize = function(){
-            this.btn = new createjs.Bitmap(queue.getResult('startButton'));
-            var self = this;
-            this.btn.name = 'startButton';
-            this.btn.cursor = 'pointer';
-            this.btn.regY = this.btn.getBounds().height/2;
-            this.btn.regX = this.btn.getBounds().width/2;            
-            this.adjustButton();
-            this.btn.on("click", function(e){
-                //self.pressdown();
-                e.preventDefault();
-                var instance = createjs.Sound.play("buttonClick");
-                instance.volume = 0.2;
-                createjs.Tween.get(self.btn).call(self.pressdown, [self.btn]).wait(200)
-                .call(self.pressup, [self.btn, self.btn.shadow])
-                .to({rotation: 360, alpha:0, scaleX:0, scaleY:0 }, 1000, createjs.Ease.linear)
-                .to({rotation: 0}).call(self.removeButton); 
-                begin();
-                return false;
-            });
-            
-            stage.addChild(this.btn);
-        }
-        
-        p.pressdown = function(btn){
-            btn.shadow = null;
-            btn.x = btn.x + 3;
-            btn.y = btn.y + 3;
-        };
-        p.pressup = function(btn, shadow){
-            btn.x = btn.x - 3;
-            btn.y = btn.y - 3;
-            btn.shadow = shadow;
-        };
-        
-        p.removeButton = function(){
-            var btn = this.btn;
-            stage.removeChild(btn);
-        }
-        
-        p.adjustButton = function(){
-            this.btn.x = ((stage.canvas.width - this.btn.getBounds().width)/2)
-                + this.btn.regX;
-            this.btn.y = ((stage.canvas.height - this.btn.getBounds().height)/2)
-                + this.btn.regY;
-            if(window.innerWidth < 700 || window.innerHeight < 500){
-                this.btn.scaleX = this.btn.scaleY = 0.6;
-                this.btn.shadow = new createjs.Shadow('#000', 2, 2, 15);
-            }
-            else{
-                this.btn.scaleX = this.btn.scaleY = 1;
-                this.btn.shadow = new createjs.Shadow('#000', 4, 4, 15);
-            }
-        }
-        
-        return button;
-    }());
     
     
     function loadBackgroundSong(){
@@ -187,8 +141,8 @@ define(['createJs'], function(){
         songQ.loadManifest(
             [{id:"echoLake", src:"../assets/sounds/echo_lake.mp3"}]);
         songQ.on("complete", function(e){
-            var instance = createjs.Sound.play("echoLake", {loop:6});
-                instance.volume = 0.1;
+            backgroundSong = createjs.Sound.play("echoLake", {loop:6});
+                backgroundSong.volume = 0.1;
         });
     }
     
@@ -207,7 +161,9 @@ define(['createJs'], function(){
     
     function createLogo(x,y){
         var logoObj;
-        logoObj = new logo(Math.floor((Math.random() * 27) + 1),x,y);
+        var imageNum = Math.floor((Math.random() * 27) + 1);
+        var image = queue.getResult(imageNum);
+        logoObj = new window.logo(image,x,y);
         logoContainer.addChild(logoObj.logo);
         logoArray.push(logoObj);
     }
@@ -236,54 +192,7 @@ define(['createJs'], function(){
         });
     }
     
-    var logo = (function(){
         
-        var logoObj = function(image,x,y){
-            this.logo, this.width, this.height, this.scale;
-            this.updateCounter = 0;
-            this.changeNumber;this.vSpeed; this.xSpeed;
-            this.reverseNumber = 3; this.willReverse = false;
-            this.randomizeReverse = Math.floor(Math.random()* 10) + 1;
-            this.initialize(image,x,y);
-            this.scaledWidth, this.scaledHeight;
-        }
-        p = logoObj.prototype;
-        p.initialize = function(image,x,y){
-            this.changeNumber = Math.floor(Math.random()* 300) + 60;
-            if(this.randomizeReverse <= this.reverseNumber)
-                this.willReverse = true;
-            this.vSpeed = Math.floor(Math.random()* 4) + 1;
-            this.vSpeed *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
-            this.xSpeed = Math.floor(Math.random()* 7) + 1;
-            this.logo = new createjs.Bitmap(queue.getResult(image));
-            this.logo.x = -(this.logo.getBounds().width); 
-            this.logo.y = y; this.logo.alpha = 0.5;
-            this.width = this.logo.getBounds().width;
-            this.height = this.logo.getBounds().height;
-            this.scale = Math.min(1024/this.width, 768/this.height);
-            createjs.Tween.get(this.logo,{loop:true})
-            .wait(500)
-            .to({alpha:0.2}, 3000).to({alpha:0.5}, 3000);
-            this.resizeLogo();
-        }
-        p.resizeLogo = function(){
-            var currentWidth = this.width;
-            var currentHeight = this.height;
-            var windowWidth = window.innerWidth;
-            var windowHeight = window.innerHeight;
-            var newScale = Math.min(windowWidth/currentWidth, windowHeight/currentHeight);
-            var scale = newScale/this.scale;
-            if(scale > 1) scale = 1;
-            this.scaledWidth = this.logo.getBounds().width * scale;
-            this.scaledHeight = this.logo.getBounds().height * scale;
-            //this.vSpeed = this.vSpeed * scale;
-            //this.xSpeed = this.xSpeed * scale;
-            this.logo.scaleX = this.logo.scaleY = scale;
-        }
-        
-        return logoObj;
-    }());
-    
     function logoReposition(logoObj){
         if(logoObj.willReverse){
                 if(logoObj.nextX >= logoContainer.width - logoObj.scaledWidth){
@@ -331,7 +240,7 @@ define(['createJs'], function(){
     var MenuContainer = (function(){
         
         var menu = function(){
-            this.initialize(); this.level;
+            this.initialize(); 
         }
         
         var p = menu.prototype = new createjs.Container();
@@ -342,12 +251,8 @@ define(['createJs'], function(){
         p.initialize = function(){
             this.Container_initialize;
             this.setDimension();
-            this.level = 0;
-            this.createList("Resume",1500);
-            this.createList("Software Experience",1900);
-            this.createList("Networking Experience",2300);
-            this.createList("Projects",2700);
-            
+            this.createMenuButtons();
+            this.createTopList();
         }
         
         p.setDimension = function(){
@@ -362,54 +267,250 @@ define(['createJs'], function(){
             this.height = height * 0.95;
             this.x = ((stage.canvas.width - this.width)/2);
             this.y = $("#app-nav-bar").height() + ((height - this.height)/2);
-            if(this.bg) this.removeChild(this.bg);
-            this.bg = new createjs.Shape();
-            //this.bg.graphics.setStrokeStyle(1);
-            //this.bg.graphics.beginStroke("red");
-            this.bg.graphics.beginFill('#fff');
-            this.bg.alpha = 0.6;
-            this.bg.graphics.drawRoundRect(0, 0, this.width, this.height,20);
-            this.addChild(this.bg);
-            this.setChildIndex(this.bg,0);
+            var oldBg = this.getChildByName("bg");
+            if(typeof oldBg !== "undefined") this.removeChild(oldBg);
+            var bg = new createjs.Shape();
+            bg.name = "bg";
+            bg.graphics.beginFill('#fff');
+            bg.alpha = 0.6;
+            bg.graphics.drawRoundRect(0, 0, this.width, this.height,20);
+            var mask = new createjs.Shape();
+            mask.graphics.beginFill("#000").drawRect(this.x,this.y,this.width,this.height,20);
+            this.mask = mask;
+            this.addChild(bg);
+            this.setChildIndex(bg,0);
             for (var i in this.children)
             {
                 var child = this.children[i];
                     child.x = (this.width/2) - (child.width/2);
             }
+            this.alpha = 0; 
+            createjs.Tween.get(this).to({alpha:1},400);
         
         }
         
-        p.createList = function(name,tweenLevel){
-            var level = this.level;
-            listText = new createjs.Text(name, '12px Times', '#fff');
+        p.createMenuButtons = function(){
+            var self = this;
+            this.backBtn = new createjs.Bitmap(queue.getResult('back'));
+            this.backBtn.x = 55; 
+            this.backBtn.y = 5; 
+            this.backBtn.alpha = 0;
+            this.backBtn.cursor = 'pointer';
+            this.backBtn.on('click',function(e){
+                this.level -= 1;
+                if(this.level < 1)this.level = 1;
+                else{ 
+                    var instance = createjs.Sound.play("blop");
+                    instance.volume = 0.1;
+                    createjs.Tween.get(this.backBtn)
+                    .to({alpha:0.1, scaleX:1.2, scaleY:1.2})
+                    .to({alpha:1, scaleX:1, scaleY:1},400);
+                    this.tweenOut();
+                    setTimeout(function(){self.navigate();},1000);
+                }
+            }, this);
+            
+            this.homeBtn = new createjs.Bitmap(queue.getResult('home'));
+            this.homeBtn.x = 15; 
+            this.homeBtn.y = 5; 
+            this.homeBtn.alpha = 0;
+            this.homeBtn.cursor = 'pointer';
+            this.homeBtn.on('click',function(e){
+                if(self.level > 1){
+                    var instance = createjs.Sound.play("blop");
+                    instance.volume = 0.1;
+                    createjs.Tween.get(e.target)
+                    .to({alpha:0.1, scaleX:1.2, scaleY:1.2})
+                    .to({alpha:1, scaleX:1, scaleY:1},400);
+                    this.tweenOut();
+                    setTimeout(function(){self.createTopList();},1000);
+
+                }
+            },this);
+            
+            this.volumeOn = new createjs.Bitmap(queue.getResult('volumeOn'));
+            this.volumeOff = new createjs.Bitmap(queue.getResult('volumeOff'));
+            this.volumeOn.x = this.volumeOff.x = this.width - 35;
+            this.volumeOn.y = this.volumeOff.y = 5;
+            this.volumeOn.cursor = this.volumeOff.cursor = 'pointer';
+            this.volumeOff.visible = false;
+            this.volumeOn.on('click',function(e){
+                e.target.visible = false;
+                self.volumeOff.visible = true;
+                backgroundSong.setMute(true);
+            },this);
+            this.volumeOff.on('click',function(e){
+                e.target.visible = false;
+                self.volumeOn.visible = true;
+                backgroundSong.setMute(false);
+                
+            },this);
+            this.addChild(this.backBtn, this.homeBtn, this.volumeOff, this.volumeOn);
+        }
+        
+        p.navigate = function(){  
+            if(this.level == 1)
+                this.createTopList();
+            if(this.level == 2)
+                this.createSecondList(this.grandParentListName);
+        }
+        
+        p.createTopList = function(){
+            this.level = 1;
+            this.createList("Resume Summary",1,1000);
+            this.createList("Software Experience",1,1200);
+            this.createList("Networking Experience",1,1400);
+            this.createList("Personal Projects",1,1600);
+            this.createList("Gallery",1,1800);
+        }
+        
+        p.createSecondList = function(parentListName){
+            var self = this;
+            this.level = 2;
+            if(parentListName == "Resume Summary"){
+                this.createList("Software Summary",2,1000);
+                this.createList("Networking Summary",2,1200); 
+            }
+            if(parentListName == "Software Experience"){
+                this.createList("Software Summary",2,1000);
+                this.createList("Networking Summary",2,1200); 
+            }
+            if(parentListName == "Networking Experience"){
+                this.createList("Software Summary",2,1000);
+                this.createList("Networking Summary",2,1200); 
+            }
+            if(parentListName == "Personal Projects"){
+                this.createList("Software Summary",2,1000);
+                this.createList("Networking Summary",2,1200); 
+            }
+            if(parentListName == "Gallery"){
+                if(galleryQueue instanceof createjs.LoadQueue){
+                    this.createList("JAVA",2,1000);
+                    this.createList("Android",2,1200);
+                    this.createList("Ruby",2,1400);
+                    this.createList("PHP",2,1600);
+                    this.createList("Others",2,1800);
+                }
+                else{
+                    galleryQueue = new createjs.LoadQueue();
+                    galleryQueue.loadManifest([
+                        {id:"j-01", src:"../assets/images/gallery/mimi.jpg"},
+                        {id:"leftNav", src:"../assets/images/gallery/previous.png"},
+                        {id:"rightNav", src:"../assets/images/gallery/next.png"}
+                    ]);
+                    galleryQueue.on('complete',function(e){
+                        self.createSecondList(parentListName);
+                    });
+                }
+            }
+        
+        }
+        
+        p.createThirdList = function(parentListName){
+            this.level = 3;
+            this.grandParentListName = "";
+            if(parentListName == "Software Summary" || parentListName == "Networking Summary")
+                this.grandParentListName = "Resume Summary";
+            if(parentListName == "JAVA" || parentListName == "Android" ||
+              parentListName == "Ruby" || parentListName == "PHP" ||
+              parentListName == "Others")
+                this.grandParentListName = "Gallery";
+            
+            if(parentListName == "Software Summary"){
+                this.createDocument("software-summary",3);
+            }
+            if(parentListName == "Networking Summary"){
+                this.createList("Jobs",3,1000);
+                this.createList("Internship",3,1200); 
+            }
+            if(parentListName == "JAVA"){
+                var images = [];
+                var leftNav = galleryQueue.getResult('leftNav');
+                var rightNav = galleryQueue.getResult('rightNav');
+                images[0] = galleryQueue.getResult('j-01');
+                images[0].text = "Hello";
+                images[1] = galleryQueue.getResult('j-01');
+                images[1].text = "Hello";
+                gallery = new window.Gallery(3,"java",images, this, leftNav, rightNav);
+            }
+            if(parentListName == "Android"){
+                this.createList("Jobs",3,1000);
+                this.createList("Internship",3,1200); 
+            }
+            if(parentListName == "Ruby"){
+                this.createList("Jobs",3,1000);
+                this.createList("Internship",3,1200); 
+            }
+            if(parentListName == "PHP"){
+                this.createList("Jobs",3,1000);
+                this.createList("Internship",3,1200); 
+            }
+            if(parentListName == "Others"){
+                this.createList("Jobs",3,1000);
+                this.createList("Internship",3,1200); 
+            }
+            
+        }
+        
+        p.createDocument = function(id,level){
+            var self = this;
+            $("#"+id).css({"width":(this.width * 0.9)+"px", "height":(this.height * 0.8)+"px"});
+            if(window.width < 480)
+                $("#"+id).css({"width":(this.width * 0.5)+"px"});
+            
+            htmlDoc = document.getElementById(id);
+            var content = new createjs.DOMElement(id);
+            content.mouseEnabled = true;
+            content.level = level;
+            content.alpha = 0;
+            content.DOMId = id;
+            content.x = (this.width - htmlDoc.offsetWidth)/2; content.y = 40;
+            createjs.Tween.get(content).to({alpha:1},1200);
+            this.addChild(content);
+            window.addEventListener('resize', function(e){
+                if(self.contains(content)){
+                    self.removeChild(content);
+                    self.createDocument(id,level);
+                }
+            });
+        }
+        
+        p.createList = function(name,level,tweenLevel){
+            listText = new createjs.Text(name, '12px Verdana', '#fff');
             listText.width = listText.getBounds().width;
+            listText.height = listText.getBounds().height;
             listText.cursor = 'pointer';
             listText.name = name;
             listText.alpha = 0.1;
-            //listText.textAlign = 'center';
-            var list = new createjs.Shape();
+            var list = new createjs.Bitmap(queue.getResult('list'));
             list.cursor = 'pointer';
             list.name = name;
             var self = this;
-            list.width = listText.getBounds().width + 40; list.alpha = 0.3;
-            list.height = 20; list.level = level; list.tweenLevel = tweenLevel;
-            list.x = 0;//(this.width/2) - (list.width/2);
-            list.y = this.nextListY;
-            list.graphics.beginFill('#009900');
-            list.graphics.drawRect(0, 0, list.width, list.height);
-            list.graphics.endFill();
-            listText.x = 0;//(this.width/2) - (listText.getBounds().width/2);
-            listText.y = list.y + 4; listText.level = level; listText.tweenLevel = tweenLevel;
-            this.nextListY = list.y + 20;
+            list.width = list.getBounds().width; list.alpha = 0.3;
+            list.height = list.getBounds().height; list.level = level; list.tweenLevel = tweenLevel;
+            list.x = -list.width;
+            listText.x = -listText.width;
+            listText.y = list.y + (list.height/2); 
+            listText.level = level; listText.tweenLevel = tweenLevel;
             list.listText = listText;
+            listText.list = list;
             listText.on("click", self.tweenOut, this,false, {obj:listText});
             list.on("click", self.tweenOut, this,false, {obj:list});
             this.addChild(list,listText);
-            this.tweenIn(list); this.tweenIn(listText);
-            this.adjustLists();    
+            this.adjustChildren();
+            this.tweenIn(list);
+            if(level == 1){
+                    createjs.Tween.get(this.backBtn).to({alpha:0},1000);
+                    createjs.Tween.get(this.homeBtn).to({alpha:0},1000);
+                }
+            else{
+                createjs.Tween.get(this.backBtn).to({alpha:1},1000);
+                createjs.Tween.get(this.homeBtn).to({alpha:1},1000);
+            }
+                
         }
         
-        p.adjustLists = function(){
+        p.adjustChildren = function(){
             var level = this.level;
             var countList = 0;
             var gap = 20;
@@ -417,8 +518,13 @@ define(['createJs'], function(){
             var totalSpace = 0;
             var startingY = 0;
             var nextY = 0;
+            this.backBtn.x = 55;
+            this.homeBtn.x = 15;
+            this.backBtn.y = this.homeBtn.y = 5;
+            this.volumeOn.x = this.volumeOff.x = this.width - 35;
+            this.volumeOn.y = this.volumeOff.y = 5;
             for(var i in this.children){
-                if(typeof this.children[i].level != 'undefined' && this.children[i] instanceof                              createjs.Shape && this.children[i].level == level){
+                if(typeof this.children[i].level != 'undefined' && this.children[i] instanceof                              createjs.Bitmap && this.children[i].level == level){
                     totalSpace += gap + height;
                 }       
             }
@@ -426,9 +532,10 @@ define(['createJs'], function(){
             nextY = startingY;
             
             for(var i in this.children){
-                if(typeof this.children[i].level != 'undefined' && this.children[i] instanceof                              createjs.Shape && this.children[i].level == level){
+                if(typeof this.children[i].level != 'undefined' && this.children[i] instanceof                              createjs.Bitmap && this.children[i].level == level){
+                    var lt = this.children[i].listText;
                     this.children[i].y = nextY;
-                    this.children[i].listText.y = this.children[i].y + 4;
+                    lt.y = (this.children[i].y + this.children[i].height/2) - (lt.height/2);
                     nextY += height + gap;
                 }       
             }
@@ -438,30 +545,71 @@ define(['createJs'], function(){
             var self = this;
             createjs.Tween.get(child)
                     .to({x: ((this.width/2) - (child.width/2)), alpha:1}, child.tweenLevel,                                                    createjs.Ease.backOut);
+            createjs.Tween.get(child.listText)
+                    .to({x: ((this.width/2) - (child.listText.width/2)), alpha:1}, 
+                        child.listText.tweenLevel, createjs.Ease.backOut);                                                         
         }
         
         p.tweenOut = function(e,data){
             var self = this;
             var shown = false;
+            if(typeof data !== 'undefined'){
+                self.clickedListName = data.obj.name;
+                var instance = createjs.Sound.play("blop");
+                instance.volume = 0.2;
+                if(data.obj instanceof createjs.Text){
+                    createjs.Tween.get(data.obj)
+                        .to({scaleX:1.1, scaleY:1.1}).to({scaleX:1, scaleY:1},300);
+                    createjs.Tween.get(data.obj.list)
+                        .to({scaleX:1.1, scaleY:1.1}).to({scaleX:1, scaleY:1},300);
+                }
+                if(data.obj instanceof createjs.Bitmap){
+                    createjs.Tween.get(data.obj)
+                        .to({scaleX:1.1, scaleY:1.1}).to({scaleX:1, scaleY:1},300);
+                    createjs.Tween.get(data.obj.listText)
+                        .to({scaleX:1.1, scaleY:1.1}).to({scaleX:1, scaleY:1},300);
+                }
+            }
             for (var i in this.children)
             {
                 var child = this.children[i];
-                if (child.level == 0){
-                    createjs.Tween.get(child)
-                    .to({x: (self.width - child.width), alpha:0 }, child.tweenLevel,                                           createjs.Ease.backIn).call(showNext); 
+                if (typeof child.level !== 'undefined'){
+                    if(child instanceof createjs.DOMElement){
+                        createjs.Tween.get(child).to({alpha:0},500).call(function(){
+                            self.removeChild(child);
+                            $("#"+child.DOMId).css({"visibility":"hidden"});
+                        });
+                        
+                    }
+                    else{
+                        if(child instanceof createjs.Bitmap){
+                            createjs.Tween.get(child)
+                            .to({x: (self.width + child.width), alpha:0 }, child.tweenLevel,                                           createjs.Ease.backIn).call(showNext).call(remove,[child]);
+                            createjs.Tween.get(child.listText)
+                            .to({x: (self.width + child.width), alpha:0 }, child.tweenLevel,                                           createjs.Ease.backIn).call(remove,[child.listText]);
+                        } 
+                    }
+                    if(child instanceof createjs.Container){
+                        createjs.Tween.get(child).to({alpha:0},1000).call(function(){
+                            remove(child);
+                            delete gallery;
+                        });
+                        
+                    }
                 }
 
             }
             function showNext(){
-                if(!shown){
-                    self.level = 1;
-                    if(data.obj.name == "Resume"){
-                        self.createList("New",1500);
-                        self.createList("New",1900); 
-                    }
-                    
+                if(!shown && typeof data !== 'undefined'){
+                    if(this.level == 1)
+                        self.createSecondList(self.clickedListName);
+                    if(this.level == 2)
+                        self.createThirdList(self.clickedListName);
                     shown = true;
                 }
+            }
+            function remove(child){
+                self.removeChild(child);
             }
         }
         

@@ -8,15 +8,16 @@ html, body {
     font-family: 'Josefin Slab', serif;
     text-shadow: 0px -1px 2px rgba(150, 150, 150, 1);
 }
-body{
+body, .portfolio-content{
     background: #a90329; /* Old browsers */
-    background: -moz-linear-gradient(top,  #a90329 0%, #8f0222 44%, #6d0019 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#a90329),                 color-stop(44%,#8f0222), color-stop(100%,#6d0019)); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  #a90329 0%,#8f0222 44%,#6d0019 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  #a90329 0%,#8f0222 44%,#6d0019 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  #a90329 0%,#8f0222 44%,#6d0019 100%); /* IE10+ */
-    background: linear-gradient(to bottom,  #a90329 0%,#8f0222 44%,#6d0019 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a90329',                          endColorstr='#6d0019',GradientType=0 ); /* IE6-9 */
+background: -moz-radial-gradient(center, ellipse cover,  #a90329 0%, #8f0222 44%, #6d0019 100%); /* FF3.6+ */
+background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,#a90329), color-stop(44%,#8f0222), color-stop(100%,#6d0019)); /* Chrome,Safari4+ */
+background: -webkit-radial-gradient(center, ellipse cover,  #a90329 0%,#8f0222 44%,#6d0019 100%); /* Chrome10+,Safari5.1+ */
+background: -o-radial-gradient(center, ellipse cover,  #a90329 0%,#8f0222 44%,#6d0019 100%); /* Opera 12+ */
+background: -ms-radial-gradient(center, ellipse cover,  #a90329 0%,#8f0222 44%,#6d0019 100%); /* IE10+ */
+background: radial-gradient(ellipse at center,  #a90329 0%,#8f0222 44%,#6d0019 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a90329', endColorstr='#6d0019',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
 
 }
 #app-nav-bar, #footer{
@@ -46,6 +47,7 @@ canvas{
     -webkit-transform:translateZ(0);
 }
 #myCanvas{
+    position: absolute; z-index: 0;
 }
 #content{
     position: relative;
@@ -63,51 +65,67 @@ h1 {
         text-shadow: rgba(255,255,255,0.5) 0px 1px 1px;
 }
 
+.portfolio-content{
+    visibility: hidden; overflow-y: auto; z-index: 1;
+    position: absolute; 
+    padding: 5px;
+    width: 500px; height: 500px;
+    border-radius: 10px 10px 10px 10px;
+    -moz-border-radius: 10px 10px 10px 10px;
+    -webkit-border-radius: 10px 10px 10px 10px;
+    border: 5px solid #572825;
+    text-shadow: 1px 1px 2px rgba(0, 0, 5, 1);  
+}
+
+.portfolio-content small{
+    color: #FFF;
+}
+.portfolio-content > div{margin-left: 40px;}
+
 #footer{
     width: 100%; position: fixed; bottom: 0;
     text-align: center;
     vertical-align: middle;
-    line-height: 100px; 
+    line-height: 60px; 
+    height: 60px;
 }
 
-@media all and (max-width: 639px) and (min-width: 320px) {
-    #footer {
-        background-size: 320px 55px;
-        height: 60px;
-        line-height: 60px;
-    }
-    #footer img{margin: 0px 3px 0px 3px; height: 36px; width: 36px;}
+.gallery{
+    visibility: hidden; z-index: 1;
+    position: absolute; border: 1px solid #000;
+    width: 500px; height: 500px;
+    border-radius: 20px 20px 20px 20px;
+    -moz-border-radius: 20px 20px 20px 20px;
+    -webkit-border-radius: 20px 20px 20px 20px;
+}
 
+.image-div{
+    position: relative;
+}
+.image-div img{
+    position: absolute; z-index: 0;
+}
+.image-div span{
+    position: absolute; z-index: 1;
+}
+
+
+#footer img{margin: 0px 3px 0px 3px; height: 36px; width: 36px;}
+
+@media all and (max-width: 639px) and (min-width: 320px) {
+    
 }
 
 @media all and (max-width: 799px) and (min-width: 640px) {
-    #footer {
-        background-size: 640px 110px;
-        height: 80px;
-        line-height: 80px;
-    }
-    #footer img{margin: 0px 5px 0px 5px; height: 36px; width: 36px;}
-
+    
 }
 
 @media all and (max-width: 1023px) and (min-width: 800px) {
-    #footer {
-        background-size: 800px 138px;
-        height: 90px;
-        line-height: 90px;
-    }
-    #footer img{margin: 0px 7px 0px 7px; height: 48px; width: 48px;}
-
+    
 }
 
 /* this one goes for default images - bigger sizes */
 @media all and (min-width: 1024px) {
-    #footer {
-        background-size: 1024px 100px;
-        height: 100px;
-        
-    }
-    #footer img{margin: 0px 10px 0px 10px; height: 48px; width: 48px;}
 
 }
 
